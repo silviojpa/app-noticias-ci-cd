@@ -1,0 +1,46 @@
+# Arquivo .gitignore para projetos Python, Flask e Jenkins/CI
+
+# ----------------------------------------------------
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+
+# Python: cache e arquivos temporários
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*~
+.pytest_cache/
+htmlcov/
+.nox/
+.tox/
+
+# Docker e Artefatos de Build
+# ----------------------------------------------------
+# Ignorar arquivos gerados pelo Docker Compose/localmente
+.dockerignore
+!Dockerfile # NUNCA ignore o Dockerfile
+
+# Arquivos de log e bancos de dados locais
+*.log
+*.sqlite3
+*.db
+
+# Configurações do VS Code
+# ----------------------------------------------------
+.vscode/
+
+# Arquivos de Configuração Local
+# ----------------------------------------------------
+# Arquivos de variáveis de ambiente que contêm segredos
+.env
+.flaskenv
+
+# Jenkins
+# ----------------------------------------------------
+# Pastas de workspace/logs do Jenkins
+/workspace/
+/builds/
