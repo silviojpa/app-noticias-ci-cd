@@ -7,7 +7,7 @@ pipeline {
     // Variáveis de ambiente
     environment {
         // ID da credencial que você criou no Jenkins
-        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
+        DOCKERHUB_CREDENTIALS = 'docker-cred'
         // Nome do repositório no Docker Hub 
         DOCKER_IMAGE_NAME = "silvio69luiz/app-noticias"
         
@@ -113,14 +113,3 @@ pipeline {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
