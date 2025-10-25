@@ -13,7 +13,7 @@ pipeline {
         
         // NOVO: Variáveis para o Deploy Local
         HOST_PORT = 8083 //  (Jenkins está na 8082)
-        CONTAINER_NAME = "news-app-ci-cd"
+        CONTAINER_NAME = "app-ci-cd-python"
     }
 
     stages {
@@ -108,4 +108,5 @@ pipeline {
         }
     }
 }
+
 
