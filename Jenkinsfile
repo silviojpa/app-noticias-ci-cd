@@ -58,7 +58,7 @@ pipeline {
             steps {
                 script {
                     // Autentica com o Docker Hub usando as credenciais configuradas
-                    withDockerRegistry(url: 'https://registry.hub.docker.com', credentialsId: 'dockerhub-credentials') {
+                    withDockerRegistry(url: 'https://registry.hub.docker.com', credentialsId: '090a499e-1f42-43b1-9077-414b4750c439') {
                         // Faz o push da imagem com o número do build
                         sh "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}" 
                         
@@ -113,3 +113,4 @@ pipeline {
         }
     }
 }
+
