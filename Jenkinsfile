@@ -33,10 +33,10 @@ pipeline {
                 
                 // Exemplo de execução de testes (assumindo Pytest instalado). 
                 // Usamos '|| true' caso o Pytest não esteja na requirements.txt ainda, para não falhar.
-                sh 'pytest || true' 
+                sh 'pytest' 
                 
                 // Exemplo de Linting (assumindo flake8 instalado)
-                sh 'flake8 --max-complexity=10 --max-line-length=120 . || true'
+                sh 'flake8 --max-complexity=10 --max-line-length=120 .'
             }
         }
         
@@ -108,5 +108,6 @@ pipeline {
         }
     }
 }
+
 
 
