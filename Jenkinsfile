@@ -12,7 +12,7 @@ pipeline {
         DOCKER_IMAGE_NAME = "silvio69luiz/app-noticias"
         
         // NOVO: Variáveis para o Deploy Local
-        HOST_PORT = 8083 // Porta no seu Ubuntu para acessar a aplicação (Jenkins está na 8082)
+        HOST_PORT = 8083 //  (Jenkins está na 8082)
         CONTAINER_NAME = "news-app-ci-cd"
     }
 
@@ -65,7 +65,6 @@ pipeline {
             }
         }
         
-        // NOVO STAGE: DEPLOY para o ambiente de testes local (Ubuntu)
         stage('Deploy to Localhost') {
             steps {
                 sh """
@@ -109,3 +108,4 @@ pipeline {
         }
     }
 }
+
