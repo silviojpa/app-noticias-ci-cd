@@ -6,13 +6,13 @@ pipeline {
 
     // Variáveis de ambiente
     environment {
-        // ID da credencial que você criou no Jenkins
-        DOCKERHUB_CREDENTIALS = '090a499e-1f42-43b1-9077-414b4750c439'
+        // ID da credencial que você criou no Jenkins (MANTIDA como env, mas não será usada no push)
+        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
         // Nome do repositório no Docker Hub 
         DOCKER_IMAGE_NAME = "silvio69luiz/app-noticias"
         
-        // NOVO: Variáveis para o Deploy Local
-        HOST_PORT = 8083 //  (Jenkins está na 8082)
+        // Variáveis para o Deploy Local
+        HOST_PORT = 8083 // (Jenkins está na 8082)
         CONTAINER_NAME = "app-ci-cd-python"
     }
 
@@ -29,18 +29,13 @@ pipeline {
                 // 1. Cria o virtual environment
                 sh 'python3 -m venv venv'
                 
-                // 2. Não ativamos o venv com o '. activate' para evitar problemas de PATH.
-                // sh '. venv/bin/activate'
-                // Em vez disso, chamamos os binários diretamente pelo caminho.
-                
-                // 3. Instalamos com o pip do venv, usando --ignore-installed 
-                // para garantir que a instalação seja feita no venv.
+                // 2. Instalação no venv
                 sh './venv/bin/pip install --ignore-installed -r requirements.txt' 
                 
-                // 4. Chamamos o executável de teste do venv
+                // 3. Chamamos o executável de teste do venv
                 sh './venv/bin/pytest'
                 
-                // 5. Chamamos o executável de lint do venv
+                // 4. Chamamos o executável de lint do venv
                 sh './venv/bin/flake8 --max-complexity=10 --max-line-length=120 --exclude=venv . || true'
             }
         }
@@ -48,8 +43,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Usa a função 'docker.build' do plugin Docker Pipeline
-                    docker.build("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
+                    // Construir a imagem diretamente com a tag :latest
+                    docker.build("${DOCKER_IMAGE_NAME}:latest")
                 }
             }
         }
@@ -57,13 +52,11 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // Autentica com o Docker Hub usando as credenciais configuradas
-                    withDockerRegistry(url: 'https://registry.hub.docker.com', credentialsId: '090a499e-1f42-43b1-9077-414b4750c439') {
-                        // Faz o push da imagem com o número do build
-                        sh "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}" 
-                        
-                        // Opcional: Faz o push da tag 'latest' também
-                        sh "docker tag ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_IMAGE_NAME}:latest"
+                    // *** AQUI ESTÁ A MUDANÇA MAIS IMPORTANTE ***
+                    // Usando o ID literal da credencial '090a499e-1f42-43b1-9077-414b4750c439'
+                    // Isso contorna o problema de resolução de variáveis do Jenkins.
+                    withDockerRegistry(credentialsId: '090a499e-1f42-43b1-9077-414b4750c439', toolName: 'docker', url: 'https://github.com/silviojpa/app-noticias-ci-cd.git') {
+                        // Faz o push da imagem com a tag 'latest' (push simplificado)
                         sh "docker push ${DOCKER_IMAGE_NAME}:latest"
                     }
                 }
@@ -73,7 +66,7 @@ pipeline {
         stage('Deploy to Localhost') {
             steps {
                 sh """
-                echo "Iniciando o Deploy da imagem ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                echo "Iniciando o Deploy da imagem ${DOCKER_IMAGE_NAME}:latest"
                 
                 # 1. Parar e remover qualquer container antigo rodando com o mesmo nome
                 if docker ps -a | grep -q ${CONTAINER_NAME}; then
@@ -89,29 +82,23 @@ pipeline {
                 docker run -d \\
                   --name ${CONTAINER_NAME} \\
                   -p ${HOST_PORT}:5000 \\
-                  ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}
+                  ${DOCKER_IMAGE_NAME}:latest
                 """
             }
         }
     }
 
     post {
-        // Bloco executado no final, independente do resultado (SUCCESS ou FAILURE)
         always {
-            // Boa prática: remove o ambiente virtual criado no estágio 'Test' para liberar espaço
             sh 'rm -rf venv || true' 
         }
-        // Notificação de sucesso
         success {
             echo "Pipeline concluído com SUCESSO!"
-            echo "IMAGEM PUBLICADA: ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+            echo "IMAGEM PUBLICADA: ${DOCKER_IMAGE_NAME}:latest"
             echo "APLICAÇÃO ACESSÍVEL EM: http://localhost:${HOST_PORT}"
         }
-        // Notificação de falha
         failure {
             echo "Pipeline FALHOU! Verifique o log do estágio que falhou."
         }
     }
 }
-
-
