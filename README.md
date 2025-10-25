@@ -46,14 +46,16 @@ Após a conclusão bem-sucedida do pipeline, a aplicação está acessível no a
 
 URL de Acesso:
 ``http://localhost:8083``
-A tela da aplicação exibirá o "Feed de Notícias DevOps".
+
+- A tela da aplicação exibirá o "Feed de Notícias DevOps".
 
 📝 Como Replicar este Pipeline
-Para replicar este projeto em seu próprio ambiente Jenkins:
 
-Credenciais do Docker Hub: Crie uma credencial do tipo "Username with password" no Jenkins com o ID dockerhub-credentials, usando seu nome de usuário e um Token de Acesso gerado no Docker Hub.
+-- Para replicar este projeto em seu próprio ambiente Jenkins:
 
-Repo do Código: Configure um novo Pipeline no Jenkins, apontando para o arquivo Jenkinsfile deste repositório.
+- Credenciais do Docker Hub: Crie uma credencial do tipo "Username with password" no Jenkins com o ID dockerhub-credentials, usando seu nome de usuário e um Token de Acesso gerado no Docker Hub.
 
-Execução: Inicie o Build!
+- Repo do Código: Configure um novo Pipeline no Jenkins, apontando para o arquivo Jenkinsfile deste repositório.
+
+- Execução: Inicie o Build!
   
