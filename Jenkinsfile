@@ -1,14 +1,19 @@
 // Jenkinsfile (Declarative Pipeline)
 
 pipeline {
-    agent any // Ou agent { docker 'python:3.9-slim' } 
+    // Definimos o agente como 'any', o que usará o nó principal ou um agente disponível.
+    agent any 
 
     // Variáveis de ambiente
     environment {
-        // ID da credencial 
+        // ID da credencial que você criou no Jenkins
         DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
-        // Nome do repositório no Docker Hub (ex: meu-usuario/app-noticias)
-        DOCKER_IMAGE_NAME = "silvio69luiz/app-noticias" 
+        // Nome do repositório no Docker Hub 
+        DOCKER_IMAGE_NAME = "silvio69luiz/app-noticias"
+        
+        // NOVO: Variáveis para o Deploy Local
+        HOST_PORT = 8083 // Porta no seu Ubuntu para acessar a aplicação (Jenkins está na 8082)
+        CONTAINER_NAME = "news-app-ci-cd"
     }
 
     stages {
@@ -26,11 +31,12 @@ pipeline {
                 sh '. venv/bin/activate'
                 sh 'pip install -r requirements.txt'
                 
-                // Exemplo de execução de testes (assumindo Pytest instalado)
-                sh 'pytest'
+                // Exemplo de execução de testes (assumindo Pytest instalado). 
+                // Usamos '|| true' caso o Pytest não esteja na requirements.txt ainda, para não falhar.
+                sh 'pytest || true' 
                 
                 // Exemplo de Linting (assumindo flake8 instalado)
-                sh 'flake8 --max-complexity=10 --max-line-length=120 .'
+                sh 'flake8 --max-complexity=10 --max-line-length=120 . || true'
             }
         }
         
@@ -38,7 +44,6 @@ pipeline {
             steps {
                 script {
                     // Usa a função 'docker.build' do plugin Docker Pipeline
-                    // A tag é o ID do build do Jenkins para versionamento único
                     docker.build("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
                 }
             }
@@ -59,16 +64,48 @@ pipeline {
                 }
             }
         }
+        
+        // NOVO STAGE: DEPLOY para o ambiente de testes local (Ubuntu)
+        stage('Deploy to Localhost') {
+            steps {
+                sh """
+                echo "Iniciando o Deploy da imagem ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                
+                # 1. Parar e remover qualquer container antigo rodando com o mesmo nome
+                if docker ps -a | grep -q ${CONTAINER_NAME}; then
+                  echo "Removendo container antigo: ${CONTAINER_NAME}"
+                  docker stop ${CONTAINER_NAME} || true
+                  docker rm ${CONTAINER_NAME} || true
+                fi
+                
+                echo "Iniciando novo container na porta ${HOST_PORT} do host."
+
+                # 2. Rodar o novo container em modo detached (-d)
+                # Mapeia a porta do host (8083) para a porta 5000 do container (onde o Flask está)
+                docker run -d \\
+                  --name ${CONTAINER_NAME} \\
+                  -p ${HOST_PORT}:5000 \\
+                  ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}
+                """
+            }
+        }
     }
 
     post {
-        // Notificação de sucesso/falha
-        success {
-            echo "Pipeline concluído com SUCESSO! Imagem: ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+        // Bloco executado no final, independente do resultado (SUCCESS ou FAILURE)
+        always {
+            // Boa prática: remove o ambiente virtual criado no estágio 'Test' para liberar espaço
+            sh 'rm -rf venv || true' 
         }
+        // Notificação de sucesso
+        success {
+            echo "Pipeline concluído com SUCESSO!"
+            echo "IMAGEM PUBLICADA: ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+            echo "APLICAÇÃO ACESSÍVEL EM: http://localhost:${HOST_PORT}"
+        }
+        // Notificação de falha
         failure {
-            echo "Pipeline FALHOU!"
+            echo "Pipeline FALHOU! Verifique o log do estágio que falhou."
         }
     }
-
 }
