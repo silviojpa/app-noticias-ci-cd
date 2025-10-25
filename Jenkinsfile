@@ -26,17 +26,21 @@ pipeline {
 
         stage('Test and Lint') {
             steps {
-                // Cria e ativa um virtual environment
+                // 1. Cria o virtual environment
                 sh 'python3 -m venv venv'
-                sh '. venv/bin/activate'
                 
-                // Mantemos a instalação simples, confiando que o venv está ativo
-                sh 'pip install -r requirements.txt' 
+                // 2. Não ativamos o venv com o '. activate' para evitar problemas de PATH.
+                // sh '. venv/bin/activate'
+                // Em vez disso, chamamos os binários diretamente pelo caminho.
                 
-                // NOVO: Chamar o executável do venv diretamente
+                // 3. Instalamos com o pip do venv, usando --ignore-installed 
+                // para garantir que a instalação seja feita no venv.
+                sh './venv/bin/pip install --ignore-installed -r requirements.txt' 
+                
+                // 4. Chamamos o executável de teste do venv
                 sh './venv/bin/pytest'
                 
-                // NOVO: Chamar o flake8 do venv diretamente
+                // 5. Chamamos o executável de lint do venv
                 sh './venv/bin/flake8 --max-complexity=10 --max-line-length=120 .'
             }
         }
@@ -109,6 +113,7 @@ pipeline {
         }
     }
 }
+
 
 
 
