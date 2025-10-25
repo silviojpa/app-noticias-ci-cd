@@ -60,7 +60,7 @@ pipeline {
                     // Autentica com o Docker Hub usando as credenciais configuradas
                     docker.withRegistry('https://registry.hub.docker.com', DOCKERHUB_CREDENTIALS) {
                         // Faz o push da imagem com o número do build
-                        sh "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} || true" 
+                        sh "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}" 
                         
                         // Opcional: Faz o push da tag 'latest' também
                         sh "docker tag ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_IMAGE_NAME}:latest"
@@ -113,6 +113,7 @@ pipeline {
         }
     }
 }
+
 
 
 
