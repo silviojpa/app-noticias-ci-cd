@@ -55,7 +55,7 @@ pipeline {
                     // *** AQUI ESTÁ A MUDANÇA MAIS IMPORTANTE ***
                     // Usando o ID literal da credencial '090a499e-1f42-43b1-9077-414b4750c439'
                     // Isso contorna o problema de resolução de variáveis do Jenkins.
-                    withDockerRegistry(credentialsId: '090a499e-1f42-43b1-9077-414b4750c439', toolName: 'docker', url: 'https://github.com/silviojpa/app-noticias-ci-cd.git') {
+                    withDockerRegistry(credentialsId: '090a499e-1f42-43b1-9077-414b4750c439', url: 'https://registry.hub.docker.com') {
                         // Faz o push da imagem com a tag 'latest' (push simplificado)
                         sh "docker push ${DOCKER_IMAGE_NAME}:latest"
                     }
@@ -102,3 +102,4 @@ pipeline {
         }
     }
 }
+
