@@ -29,14 +29,15 @@ pipeline {
                 // Cria e ativa um virtual environment
                 sh 'python3 -m venv venv'
                 sh '. venv/bin/activate'
-                sh 'pip install --no-user-deps -r requirements.txt'
                 
-                // Exemplo de execução de testes (assumindo Pytest instalado). 
-                // Usamos '|| true' caso o Pytest não esteja na requirements.txt ainda, para não falhar.
-                sh 'pytest' 
+                // Mantemos a instalação simples, confiando que o venv está ativo
+                sh 'pip install -r requirements.txt' 
                 
-                // Exemplo de Linting (assumindo flake8 instalado)
-                sh 'flake8 --max-complexity=10 --max-line-length=120 .'
+                // NOVO: Chamar o executável do venv diretamente
+                sh './venv/bin/pytest'
+                
+                // NOVO: Chamar o flake8 do venv diretamente
+                sh './venv/bin/flake8 --max-complexity=10 --max-line-length=120 .'
             }
         }
         
@@ -108,6 +109,7 @@ pipeline {
         }
     }
 }
+
 
 
 
