@@ -15,7 +15,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Clona o código do Git
-                git branch: 'main', url: 'URL_DO_SEU_REPOSITORIO_GIT' 
+                git branch: 'main', url: 'https://github.com/silviojpa/app-noticias-ci-cd.git' 
             }
         }
 
@@ -70,4 +70,5 @@ pipeline {
             echo "Pipeline FALHOU!"
         }
     }
+
 }
